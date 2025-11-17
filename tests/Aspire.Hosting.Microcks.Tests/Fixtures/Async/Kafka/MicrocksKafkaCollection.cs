@@ -15,11 +15,12 @@
 //
 //
 
-namespace Aspire.Hosting.Microcks;
+using Xunit;
 
-public static class MicrocksContainerImageTags
+namespace Aspire.Hosting.Microcks.Tests.Fixtures.Async.Kafka;
+
+[CollectionDefinition(MicrocksKafkaCollection.CollectionName)]
+public sealed class MicrocksKafkaCollection : ICollectionFixture<MicrocksKafkaFixture>
 {
-    public const string Image = "microcks/microcks-uber";
-    public const string Tag = "1.13.0";
-    public const string Registry = "quay.io";
+    public const string CollectionName = "Microcks Kafka collection";
 }

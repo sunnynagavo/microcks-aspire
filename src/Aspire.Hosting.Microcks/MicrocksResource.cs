@@ -17,7 +17,6 @@
 
 using System;
 using Aspire.Hosting.ApplicationModel;
-using Microsoft.Extensions.Logging;
 
 namespace Aspire.Hosting.Microcks;
 
@@ -27,7 +26,7 @@ namespace Aspire.Hosting.Microcks;
 /// It is intended for use in service discovery and integration testing scenarios.
 /// </summary>
 public class MicrocksResource(string name) : ContainerResource(name),
-    IResourceWithServiceDiscovery
+    IResourceWithWaitSupport // This resource supports wait operations
 {
     internal const string PrimaryEndpointName = "http";
 

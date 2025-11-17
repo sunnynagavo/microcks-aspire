@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Lifecycle;
+using Aspire.Hosting.Microcks.Async;
 using Aspire.Hosting.Microcks.Clients;
 using Aspire.Hosting.Microcks.FileArtifacts;
 using Aspire.Hosting.Microcks.MainRemoteArtifacts;
@@ -51,6 +52,7 @@ internal sealed class MicrocksResourceLifecycleHook
     /// </summary>
     /// <param name="loggerFactory">Factory used to create loggers for resources.</param>
     /// <param name="resourceLoggerService">Service used to stream resource logs for readiness detection.</param>
+    /// <param name="resourceNotificationService">Service used to publish resource state changes.</param>
     /// <param name="executionContext">Execution context describing run/publish mode.</param>
     /// <param name="serviceProvider">Service provider for resolving scoped services.</param>
     public MicrocksResourceLifecycleHook(
@@ -81,6 +83,8 @@ internal sealed class MicrocksResourceLifecycleHook
         {
             return;
         }
+        // await Task.Delay(1000, cancellationToken)
+        //     .ConfigureAwait(false);
 
         var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
             _shutdownCancellationTokenSource.Token,
@@ -94,8 +98,6 @@ internal sealed class MicrocksResourceLifecycleHook
             var endpoint = microcksResource.GetEndpoint();
             if (endpoint.IsAllocated)
             {
-                await GetMicrocksHealthyAsync(microcksResource, cancellationTokenSource.Token);
-
                 // Get the provider from DI and use it for upload/import operations
                 using var scope = _serviceProvider.CreateScope();
                 var microcksClient = scope.ServiceProvider
@@ -115,6 +117,8 @@ internal sealed class MicrocksResourceLifecycleHook
                 var snapshotAnnotations = annotations.OfType<SnapshotsAnnotation>();
                 await ImportSnapshotsAsync(microcksClient, snapshotAnnotations, cancellationTokenSource.Token)
                     .ConfigureAwait(false);
+
+                _logger.LogInformation("Microcks resource '{ResourceName}' is fully configured with all artifacts imported", microcksResource.Name);
             }
         }
     }
@@ -165,68 +169,6 @@ internal sealed class MicrocksResourceLifecycleHook
         {
             await microcksClient.ImportRemoteArtifactAsync(remoteUrl, cancellationToken);
         }
-    }
-
-    /// <summary>
-    /// Waits until the Microcks container emits a startup log line and the
-    /// resource health endpoint reports healthy.
-    /// </summary>
-    /// <param name="microcksResource">The Microcks resource to monitor.</param>
-    /// <param name="cancellationToken">A token to cancel waiting early.</param>
-    private async Task GetMicrocksHealthyAsync(MicrocksResource microcksResource, CancellationToken cancellationToken)
-    {
-        try
-        {
-            // Watch the logs of the Microcks resource until we find the line "Microcks server started"
-            await foreach (var batch in _resourceLoggerService.WatchAsync(microcksResource).WithCancellation(cancellationToken))
-            {
-                // Watch for the "Started MicrocksApplication" log line
-                if (batch.Any(line => line.Content.Contains("Started MicrocksApplication", StringComparison.OrdinalIgnoreCase)))
-                {
-                    break;
-                }
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Ignore cancellation while listening to logs
-        }
-
-        await this.WaitForHealthAsync(microcksResource, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    private async Task WaitForHealthAsync(MicrocksResource microcksResource, CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Waiting for Microcks service to be healthy");
-
-        await TryWaitForHealthAsync(microcksResource, cancellationToken);
-    }
-
-    private async Task TryWaitForHealthAsync(MicrocksResource microcksResource, CancellationToken cancellationToken)
-    {
-        const int retryCount = 3;
-        var retryDelay = TimeSpan.FromMilliseconds(100);
-
-        for (var i = 0; i < retryCount; i++)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                _logger.LogInformation("Health check cancelled for Microcks service");
-                return;
-            }
-            using var scope = _serviceProvider.CreateScope();
-            var microcksClient = scope.ServiceProvider
-                .GetRequiredKeyedService<IMicrocksClient>(microcksResource.Name);
-            if (await microcksClient.IsHealthyAsync(cancellationToken))
-            {
-                return;
-            }
-
-            await Task.Delay(retryDelay, cancellationToken);
-        }
-
-        _logger.LogInformation("Microcks service is unhealthy");
     }
 
     /// <summary>

@@ -17,10 +17,13 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Lifecycle;
 using Aspire.Hosting.Microcks;
+using Aspire.Hosting.Microcks.Async;
 using Aspire.Hosting.Microcks.FileArtifacts;
+using Aspire.Hosting.Microcks.HealthCheck;
 using Aspire.Hosting.Microcks.MainRemoteArtifacts;
 
 namespace Aspire.Hosting;
@@ -31,6 +34,7 @@ namespace Aspire.Hosting;
 /// </summary>
 public static class MicrocksBuilderExtensions
 {
+
     /// <summary>
     /// Adds a Microcks resource to the distributed application and configures
     /// default HTTP endpoint, container image and registry.
@@ -42,15 +46,20 @@ public static class MicrocksBuilderExtensions
     public static IResourceBuilder<MicrocksResource> AddMicrocks(this IDistributedApplicationBuilder builder, string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+
         var microcksResource = new MicrocksResource(name);
+
         var resourceBuilder = builder
             .AddResource(microcksResource)
             .WithHttpEndpoint(targetPort: 8080, name: MicrocksResource.PrimaryEndpointName)
+            .WithHttpHealthCheck("api/health", statusCode: 200)
+            .WaitForConsoleOutput("Started MicrocksApplication", TimeSpan.FromSeconds(5))
             .WithImage(MicrocksContainerImageTags.Image, MicrocksContainerImageTags.Tag)
             .WithImageRegistry(MicrocksContainerImageTags.Registry)
             .WithEnvironment("OTEL_JAVAAGENT_ENABLED", "true")
             .WithOtlpExporter();
 
+        // Register lifecycle hook for Microcks (Import artifacts, etc.)
         builder.Services.TryAddLifecycleHook<MicrocksResourceLifecycleHook>();
 
         // Configure Client for Microcks API
@@ -167,5 +176,95 @@ public static class MicrocksBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
         return builder.WithContainerRuntimeArgs($"--add-host={hostAlias}:host-gateway");
+    }
+
+
+    /// <summary>
+    /// Configures the Microcks resource to deploy an Async Minion alongside
+    /// the main Microcks instance.
+    /// </summary>
+    /// <param name="builder">The resource builder for the Microcks resource.</param>
+    /// <returns>The same <see cref="IResourceBuilder{MicrocksResource}"/>
+    public static IResourceBuilder<MicrocksResource> WithAsyncFeature(
+        this IResourceBuilder<MicrocksResource> microcksBuilder,
+        Action<IResourceBuilder<MicrocksAsyncMinionResource>>? configureAsyncMinion = null)
+    {
+        ArgumentNullException.ThrowIfNull(microcksBuilder, nameof(microcksBuilder));
+
+        var microcksResource = microcksBuilder.Resource;
+        var applicationBuilder = microcksBuilder.ApplicationBuilder;
+
+        // Check if an Async Minion resource already exists
+        bool asyncMinionExists = applicationBuilder.Resources
+            .OfType<MicrocksAsyncMinionResource>()
+            .Any();
+
+        if (asyncMinionExists)
+        {
+            return microcksBuilder; // Async Minion already configured
+        }
+
+        // Retrieve Microcks container image annotations
+        var microcksAnnotations = microcksResource.Annotations;
+
+        // Determine image name for Async Minion from Microcks resource
+        var containerImageAnnotations = microcksAnnotations.OfType<ContainerImageAnnotation>();
+        var containerImageAnnotation = containerImageAnnotations.Single();
+        var microcksImage = containerImageAnnotation.Image;
+
+        var microcksAsyncMinionImage = microcksImage.Replace("microcks-uber", "microcks-uber-async-minion");
+
+        var microcksAsyncMinionTag = containerImageAnnotation.Tag;
+        if (microcksAsyncMinionTag.EndsWith("-native"))
+        {
+            microcksAsyncMinionTag = microcksAsyncMinionTag.Replace("-native", "");
+        }
+
+        var asyncMicrocksBuilder = applicationBuilder.AddMicrocksAsyncMinion(microcksBuilder)
+            .WithImage(microcksAsyncMinionImage, microcksAsyncMinionTag);
+
+        // Apply optional configuration action
+        configureAsyncMinion?.Invoke(asyncMicrocksBuilder);
+
+        return microcksBuilder;
+    }
+
+    /// <summary>
+    /// Adds a Microcks Async Minion resource to the distributed application,
+    /// linked to the specified parent Microcks resource.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="parentMicrocksBuilder">The resource builder for the parent Microcks resource.</param>
+    /// <returns>A resource builder for the newly added Microcks Async Minion resource.</returns>
+    public static IResourceBuilder<MicrocksAsyncMinionResource> AddMicrocksAsyncMinion(
+        this IDistributedApplicationBuilder builder, IResourceBuilder<MicrocksResource> parentMicrocksBuilder)
+    {
+        var parentMicrocksResource = parentMicrocksBuilder.Resource;
+        string name = $"{parentMicrocksResource.Name}-async-minion";
+        var asyncMinionResource = new MicrocksAsyncMinionResource(name);
+
+        var resourceBuilder = builder
+            .AddResource(asyncMinionResource)
+            .WithHttpEndpoint(targetPort: 8081, name: MicrocksAsyncMinionResource.PrimaryEndpointName)
+            .WaitForConsoleOutput("Profile prod activated.") // Check if Async Minion started correctly
+            .WithParentRelationship(parentMicrocksResource)
+            .WithEnvironment(context =>
+            {
+                var microcksEndpoint = parentMicrocksResource.GetEndpoint();
+                var microcksUrl = microcksEndpoint.Property(EndpointProperty.HostAndPort);
+                context.EnvironmentVariables["MICROCKS_HOST_PORT"] = microcksUrl;
+            })
+            .WaitFor(parentMicrocksBuilder); // Ensure Microcks starts before Async Minion
+
+
+        parentMicrocksBuilder.WithEnvironment(context =>
+        {
+            var asyncMinionEndpoint = asyncMinionResource.GetEndpoint();
+            var asyncMinionUrl = asyncMinionEndpoint.Property(EndpointProperty.Url);
+
+            context.EnvironmentVariables["ASYNC_MINION_URL"] = asyncMinionUrl;
+        });
+
+        return resourceBuilder;
     }
 }
