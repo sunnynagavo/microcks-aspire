@@ -20,7 +20,7 @@ using Aspire.Hosting.ApplicationModel;
 
 namespace Microcks.Aspire.MainRemoteArtifacts;
 
-internal sealed class MainRemoteArtifactAnnotation : IResourceAnnotation
+internal sealed class SecondaryRemoteArtifactAnnotation : IResourceAnnotation
 {
     public string RemoteArtifactUrl { get; }
 
@@ -30,7 +30,7 @@ internal sealed class MainRemoteArtifactAnnotation : IResourceAnnotation
     /// </summary>
     public string? SecretName { get; }
 
-    public MainRemoteArtifactAnnotation(string remoteArtifactUrl, string? secretName = null)
+    public SecondaryRemoteArtifactAnnotation(string remoteArtifactUrl, string? secretName = null)
     {
         ArgumentNullException.ThrowIfNull(remoteArtifactUrl, nameof(remoteArtifactUrl));
         RemoteArtifactUrl = remoteArtifactUrl;

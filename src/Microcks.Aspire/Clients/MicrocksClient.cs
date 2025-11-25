@@ -128,9 +128,9 @@ internal sealed class MicrocksClient : IMicrocksClient
     }
 
     /// <inheritdoc />
-    public async Task ImportRemoteArtifactAsync(string remoteUrl, CancellationToken cancellationToken)
+    public async Task ImportRemoteArtifactAsync(string remoteUrl, bool mainArtifact = true, string? secretName = null, CancellationToken cancellationToken = default)
     {
-        var result = await _client.DownloadArtifactAsync(true, remoteUrl, cancellationToken);
+        var result = await _client.DownloadArtifactAsync(mainArtifact, remoteUrl, secretName, cancellationToken);
         if (result.StatusCode != HttpStatusCode.Created)
         {
             _logger.LogError("Failed to import remote artifact from '{RemoteUrl}' with status code {StatusCode}", remoteUrl, result.StatusCode);

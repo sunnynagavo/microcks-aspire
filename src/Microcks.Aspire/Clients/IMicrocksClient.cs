@@ -78,9 +78,11 @@ public interface IMicrocksClient
     /// Imports remote artifact to the Microcks instance.
     /// </summary>
     /// <param name="remoteUrl">The URL of the remote artifact to import.</param>
+    /// <param name="mainArtifact">Indicates if the artifact is a main artifact.</param>
+    /// <param name="secretName">The optional name of the secret to use for authentication.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A task representing the import operation.</returns>
-    Task ImportRemoteArtifactAsync(string remoteUrl, CancellationToken cancellationToken);
+    Task ImportRemoteArtifactAsync(string remoteUrl, bool mainArtifact = true, string? secretName = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Verify that a service has been called according to its name and version.
