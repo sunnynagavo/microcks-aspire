@@ -163,28 +163,11 @@ internal sealed class MicrocksResourceLifecycleHook
         }
     }
 
-    private async Task ImportRemoteArtifactsAsync(
+    private async Task ImportRemoteArtifactsAsync<T>(
         IMicrocksClient microcksClient,
-        IEnumerable<MainRemoteArtifactAnnotation> remoteArtifacts,
+        IEnumerable<T> remoteArtifacts,
         bool isMain,
-        CancellationToken cancellationToken)
-    {
-        if (remoteArtifacts == null || !remoteArtifacts.Any())
-        {
-            return;
-        }
-
-        foreach (var artifact in remoteArtifacts)
-        {
-            await microcksClient.ImportRemoteArtifactAsync(artifact.RemoteArtifactUrl, isMain, artifact.SecretName, cancellationToken);
-        }
-    }
-
-    private async Task ImportRemoteArtifactsAsync(
-        IMicrocksClient microcksClient,
-        IEnumerable<SecondaryRemoteArtifactAnnotation> remoteArtifacts,
-        bool isMain,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken) where T : IRemoteArtifactAnnotation
     {
         if (remoteArtifacts == null || !remoteArtifacts.Any())
         {

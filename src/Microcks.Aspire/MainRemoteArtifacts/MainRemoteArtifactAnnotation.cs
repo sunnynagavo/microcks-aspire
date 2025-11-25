@@ -16,11 +16,10 @@
 //
 
 using System;
-using Aspire.Hosting.ApplicationModel;
 
 namespace Microcks.Aspire.MainRemoteArtifacts;
 
-internal sealed class MainRemoteArtifactAnnotation : IResourceAnnotation
+internal sealed class MainRemoteArtifactAnnotation : IRemoteArtifactAnnotation
 {
     public string RemoteArtifactUrl { get; }
 
