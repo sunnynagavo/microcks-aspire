@@ -191,11 +191,11 @@ public sealed class TestDistributedApplicationBuilder : IDistributedApplicationB
     /// <returns>A resource builder for further configuration of the resource.</returns>
     public IResourceBuilder<T> AddResource<T>(T resource) where T : IResource => _innerBuilder.AddResource(resource);
 
-    [MemberNotNull(nameof(_app))]
     /// <summary>
     /// Builds the distributed application.
     /// </summary>
     /// <returns>The built <see cref="DistributedApplication"/> instance.</returns>
+    [MemberNotNull(nameof(_app))]
     public DistributedApplication Build() => _app = _innerBuilder.Build();
 
     /// <summary>
