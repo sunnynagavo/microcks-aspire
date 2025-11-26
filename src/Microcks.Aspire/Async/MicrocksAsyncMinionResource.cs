@@ -20,8 +20,16 @@ using Aspire.Hosting.ApplicationModel;
 
 namespace Microcks.Aspire.Async;
 
+/// <summary>
+/// Represents a Microcks Async Minion container resource for handling asynchronous API mocking and testing.
+/// The Async Minion extends Microcks capabilities to support WebSocket, Kafka, and other async protocols.
+/// </summary>
 public class MicrocksAsyncMinionResource : ContainerResource
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MicrocksAsyncMinionResource"/> class.
+    /// </summary>
+    /// <param name="name">The name of the Microcks Async Minion resource.</param>
     public MicrocksAsyncMinionResource(string name) : base(name)
     {
     }
