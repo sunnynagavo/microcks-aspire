@@ -44,6 +44,10 @@ public sealed class MicrocksAsyncTests
 {
     private MicrocksAsyncFixture _fixture;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MicrocksAsyncTests"/> class.
+    /// </summary>
+    /// <param name="fixture">The fixture providing the shared Microcks instance with Async Minion.</param>
     public MicrocksAsyncTests(MicrocksAsyncFixture fixture)
     {
         _fixture = fixture;

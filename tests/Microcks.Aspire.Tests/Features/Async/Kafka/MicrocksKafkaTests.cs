@@ -41,6 +41,10 @@ public sealed class MicrocksKafkaTests
 {
     private readonly MicrocksKafkaFixture _fixture;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MicrocksKafkaTests"/> class.
+    /// </summary>
+    /// <param name="fixture">The fixture providing the shared Microcks instance with Kafka.</param>
     public MicrocksKafkaTests(MicrocksKafkaFixture fixture)
     {
         _fixture = fixture;

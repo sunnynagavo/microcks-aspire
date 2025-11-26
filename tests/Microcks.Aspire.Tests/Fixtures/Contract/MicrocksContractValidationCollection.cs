@@ -28,6 +28,9 @@ namespace Microcks.Aspire.Testing.Features.Mocking.Contract;
 [CollectionDefinition(MicrocksContractValidationCollection.CollectionName)]
 public class MicrocksContractValidationCollection : ICollectionFixture<MicrocksContractValidationFixture>
 {
+    /// <summary>
+    /// The name of the collection for organizing related tests.
+    /// </summary>
     // Collection definition for sharing Microcks with Bad-Implementation and Good-Implementation resources.
     public const string CollectionName = "Microcks contract collection";
 }

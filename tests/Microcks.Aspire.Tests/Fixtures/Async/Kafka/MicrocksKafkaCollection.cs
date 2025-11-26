@@ -19,8 +19,15 @@ using Xunit;
 
 namespace Microcks.Aspire.Tests.Fixtures.Async.Kafka;
 
+/// <summary>
+/// Collection definition used to share the <see cref="MicrocksKafkaFixture"/>
+/// between tests that require Kafka messaging capabilities.
+/// </summary>
 [CollectionDefinition(MicrocksKafkaCollection.CollectionName, DisableParallelization = true)]
 public sealed class MicrocksKafkaCollection : ICollectionFixture<MicrocksKafkaFixture>
 {
+    /// <summary>
+    /// The name of the collection for organizing related tests.
+    /// </summary>
     public const string CollectionName = "Microcks Kafka collection";
 }
