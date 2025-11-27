@@ -78,7 +78,6 @@ public sealed class MicrocksKafkaFixture : IAsyncLifetime
                 minion.WithKafkaConnection(kafkaBuilder);
             });
 
-
         App = Builder.Build();
 
         var asyncMinionResource = Builder.Resources.OfType<MicrocksAsyncMinionResource>().Single();
