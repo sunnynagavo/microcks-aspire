@@ -17,9 +17,23 @@
 
 namespace Microcks.Aspire;
 
+/// <summary>
+/// Provides default container image tags and configuration for the Microcks container.
+/// </summary>
 public static class MicrocksContainerImageTags
 {
+    /// <summary>
+    /// The default Docker image name for the Microcks container.
+    /// </summary>
     public const string Image = "microcks/microcks-uber";
+
+    /// <summary>
+    /// The default Docker image tag (version) for the Microcks container.
+    /// </summary>
     public const string Tag = "1.13.0";
+
+    /// <summary>
+    /// The default Docker registry where the Microcks container image is hosted.
+    /// </summary>
     public const string Registry = "quay.io";
 }

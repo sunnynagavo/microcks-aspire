@@ -33,8 +33,19 @@ namespace Microcks.Aspire.Testing.Fixtures;
 /// </summary>
 public sealed class MicrocksMockingFixture : IAsyncLifetime, IDisposable
 {
+    /// <summary>
+    /// Gets the test distributed application builder.
+    /// </summary>
     public TestDistributedApplicationBuilder Builder { get; private set; } = default!;
+
+    /// <summary>
+    /// Gets the distributed application instance.
+    /// </summary>
     public DistributedApplication App { get; private set; } = default!;
+
+    /// <summary>
+    /// Gets the Microcks resource.
+    /// </summary>
     public MicrocksResource MicrocksResource { get; private set; } = default!;
 
     /// <summary>
@@ -92,6 +103,9 @@ public sealed class MicrocksMockingFixture : IAsyncLifetime, IDisposable
         Builder?.Dispose();
     }
 
+    /// <summary>
+    /// Disposes of the fixture resources.
+    /// </summary>
     public void Dispose()
     {
         _ = DisposeAsync();
