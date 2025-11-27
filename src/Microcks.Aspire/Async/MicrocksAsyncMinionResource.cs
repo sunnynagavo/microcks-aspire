@@ -78,7 +78,6 @@ public class MicrocksAsyncMinionResource : ContainerResource
         return operationName;
     }
 
-
     /// <summary>
     /// Generates a Kafka mock topic name based on the provided service, version, and operation name.
     /// </summary>
@@ -95,5 +94,4 @@ public class MicrocksAsyncMinionResource : ContainerResource
             version,
             operationName.Replace("/", "-"));
     }
-
 }
