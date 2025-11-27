@@ -15,24 +15,22 @@
 //
 //
 
-using System;
+using Aspire.Hosting.ApplicationModel;
 
 namespace Microcks.Aspire.MainRemoteArtifacts;
 
-internal sealed class MainRemoteArtifactAnnotation : IRemoteArtifactAnnotation
+/// <summary>
+/// Common interface for remote artifact annotations.
+/// </summary>
+internal interface IRemoteArtifactAnnotation : IResourceAnnotation
 {
-    public string RemoteArtifactUrl { get; }
+    /// <summary>
+    /// Gets the URL of the remote artifact.
+    /// </summary>
+    string RemoteArtifactUrl { get; }
 
     /// <summary>
-    /// Gets the optional name of the secret to use for authentication
-    /// when downloading the artifact from the remote URL.
+    /// Gets the optional name of the secret to use for authentication.
     /// </summary>
-    public string? SecretName { get; }
-
-    public MainRemoteArtifactAnnotation(string remoteArtifactUrl, string? secretName = null)
-    {
-        ArgumentNullException.ThrowIfNull(remoteArtifactUrl, nameof(remoteArtifactUrl));
-        RemoteArtifactUrl = remoteArtifactUrl;
-        SecretName = secretName;
-    }
+    string? SecretName { get; }
 }

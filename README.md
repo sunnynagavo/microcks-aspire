@@ -87,6 +87,45 @@ var microcks = builder.AddMicrocks("microcks")
     .WithSnapshots("microcks-repository.json");
 ```
 
+#### Importing remote artifacts
+
+You can also import artifacts directly from remote URLs. This is useful when artifacts are hosted externally (HTTP/HTTPS) instead of being embedded in your test resources:
+
+```csharp
+var microcks = builder.AddMicrocks("microcks")
+    .WithMainRemoteArtifacts(
+        "https://raw.githubusercontent.com/user/repo/main/openapi.yaml",
+        "https://raw.githubusercontent.com/user/repo/main/postman-collection.json"
+    )
+    .WithSecondaryRemoteArtifacts(
+        "https://raw.githubusercontent.com/user/repo/main/examples.yaml"
+    );
+```
+
+#### Using secrets for private remote artifacts
+
+When you need to download artifacts from private repositories that require authentication, you can use secrets. First, you need to create the secret in Microcks, then reference it when importing remote artifacts:
+
+```csharp
+using Microcks.Aspire.MainRemoteArtifacts;
+
+var microcks = builder.AddMicrocks("microcks")
+    .WithMainRemoteArtifacts(
+        new RemoteArtifact { Url = "https://gitlab.com/user/private-repo/artifact.yaml", SecretName = "gitlab-secret" },
+        "https://github.com/user/public-repo/artifact.yaml"  // No secret needed for public repos
+    )
+    .WithSecondaryRemoteArtifacts(
+        new RemoteArtifact { Url = "https://gitlab.com/user/private-repo/examples.yaml", SecretName = "gitlab-secret" },
+        "https://github.com/user/public-repo/examples.yaml"
+    );
+```
+
+The `RemoteArtifact` class allows you to specify:
+- `Url`: The remote URL of the artifact (required)
+- `SecretName`: The name of a pre-configured secret in Microcks for authentication (optional)
+
+You can mix artifacts with and without secrets in the same call, providing flexibility for different authentication requirements.
+
 ### Using mock endpoints for your dependencies
 
 During your test setup, you'd probably need to retrieve mock endpoints provided by Microcks to

@@ -112,9 +112,14 @@ internal sealed class MicrocksResourceLifecycleHook
                 await UploadArtifactsAsync(microcksClient, annotations, cancellationTokenSource.Token)
                     .ConfigureAwait(false);
 
-                // Import Microcks remote artifacts
-                var remoteArtifactUrls = annotations.OfType<MainRemoteArtifactAnnotation>();
-                await ImportRemoteArtifactsAsync(microcksClient, remoteArtifactUrls, cancellationTokenSource.Token)
+                // Import Microcks main remote artifacts
+                var mainRemoteArtifacts = annotations.OfType<MainRemoteArtifactAnnotation>();
+                await ImportRemoteArtifactsAsync(microcksClient, mainRemoteArtifacts, isMain: true, cancellationTokenSource.Token)
+                    .ConfigureAwait(false);
+
+                // Import Microcks secondary remote artifacts
+                var secondaryRemoteArtifacts = annotations.OfType<SecondaryRemoteArtifactAnnotation>();
+                await ImportRemoteArtifactsAsync(microcksClient, secondaryRemoteArtifacts, isMain: false, cancellationTokenSource.Token)
                     .ConfigureAwait(false);
 
                 var snapshotAnnotations = annotations.OfType<SnapshotsAnnotation>();
@@ -158,19 +163,20 @@ internal sealed class MicrocksResourceLifecycleHook
         }
     }
 
-    private async Task ImportRemoteArtifactsAsync(
+    private async Task ImportRemoteArtifactsAsync<T>(
         IMicrocksClient microcksClient,
-        IEnumerable<MainRemoteArtifactAnnotation> remoteArtifactUrls,
-        CancellationToken cancellationToken)
+        IEnumerable<T> remoteArtifacts,
+        bool isMain,
+        CancellationToken cancellationToken) where T : IRemoteArtifactAnnotation
     {
-        if (remoteArtifactUrls == null || !remoteArtifactUrls.Any())
+        if (remoteArtifacts == null || !remoteArtifacts.Any())
         {
             return;
         }
 
-        foreach (var remoteUrl in remoteArtifactUrls.Select(a => a.RemoteArtifactUrl))
+        foreach (var artifact in remoteArtifacts)
         {
-            await microcksClient.ImportRemoteArtifactAsync(remoteUrl, cancellationToken);
+            await microcksClient.ImportRemoteArtifactAsync(artifact.RemoteArtifactUrl, isMain, artifact.SecretName, cancellationToken);
         }
     }
 

@@ -110,6 +110,62 @@ public static class MicrocksBuilderExtensions
     }
 
     /// <summary>
+    /// Adds remote artifact annotations (URLs with optional secrets) to be imported as main artifacts
+    /// by the Microcks resource. These are useful to reference artifacts hosted
+    /// externally (HTTP/HTTPS) instead of embedding files in the test resources.
+    /// Supports both simple URL strings and <see cref="RemoteArtifact"/> objects with optional secret names.
+    /// </summary>
+    /// <param name="builder">The resource builder for the Microcks resource.</param>
+    /// <param name="remoteArtifacts">Remote artifacts (URLs or RemoteArtifact objects) pointing to artifact definitions.</param>
+    /// <returns>The same <see cref="IResourceBuilder{MicrocksResource}"/> instance for chaining.</returns>
+    public static IResourceBuilder<MicrocksResource> WithMainRemoteArtifacts(this IResourceBuilder<MicrocksResource> builder, params RemoteArtifact[] remoteArtifacts)
+    {
+        foreach (var artifact in remoteArtifacts)
+        {
+            builder.WithAnnotation(new MainRemoteArtifactAnnotation(artifact.Url, artifact.SecretName));
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds remote artifact annotations (URLs) to be imported as secondary artifacts
+    /// by the Microcks resource. These are useful to reference artifacts hosted
+    /// externally (HTTP/HTTPS) instead of embedding files in the test resources.
+    /// </summary>
+    /// <param name="builder">The resource builder for the Microcks resource.</param>
+    /// <param name="remoteArtifactUrls">Remote URLs pointing to artifact definitions.</param>
+    /// <returns>The same <see cref="IResourceBuilder{MicrocksResource}"/> instance for chaining.</returns>
+    public static IResourceBuilder<MicrocksResource> WithSecondaryRemoteArtifacts(this IResourceBuilder<MicrocksResource> builder, params string[] remoteArtifactUrls)
+    {
+        foreach (var remoteArtifactUrl in remoteArtifactUrls)
+        {
+            builder.WithAnnotation(new SecondaryRemoteArtifactAnnotation(remoteArtifactUrl));
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds remote artifact annotations (URLs with optional secrets) to be imported as secondary artifacts
+    /// by the Microcks resource. These are useful to reference artifacts hosted
+    /// externally (HTTP/HTTPS) instead of embedding files in the test resources.
+    /// Supports both simple URL strings and <see cref="RemoteArtifact"/> objects with optional secret names.
+    /// </summary>
+    /// <param name="builder">The resource builder for the Microcks resource.</param>
+    /// <param name="remoteArtifacts">Remote artifacts (URLs or RemoteArtifact objects) pointing to artifact definitions.</param>
+    /// <returns>The same <see cref="IResourceBuilder{MicrocksResource}"/> instance for chaining.</returns>
+    public static IResourceBuilder<MicrocksResource> WithSecondaryRemoteArtifacts(this IResourceBuilder<MicrocksResource> builder, params RemoteArtifact[] remoteArtifacts)
+    {
+        foreach (var artifact in remoteArtifacts)
+        {
+            builder.WithAnnotation(new SecondaryRemoteArtifactAnnotation(artifact.Url, artifact.SecretName));
+        }
+
+        return builder;
+    }
+
+    /// <summary>
     /// Adds one or more secondary artifact file annotations to the Microcks
     /// resource. Secondary artifacts may contain supplementary data (for
     /// example Postman collections) that complement main artifacts.

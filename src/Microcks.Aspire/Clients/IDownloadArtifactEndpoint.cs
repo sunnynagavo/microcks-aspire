@@ -32,11 +32,14 @@ public interface IDownloadArtifactEndpoint
     /// </summary>
     /// <param name="mainArtifact">Indicates if the artifact is the main one.</param>
     /// <param name="url">The remote URL of the artifact.</param>
+    /// <param name="secretName">The optional name of the secret to use for authentication.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The HTTP response from Microcks.</returns>
     [Post("/api/artifact/download")]
     [Headers("Accept: application/json")]
     Task<HttpResponseMessage> DownloadArtifactAsync(
         [Query] bool mainArtifact,
         [Query] string url,
+        [Query] string? secretName = null,
         CancellationToken cancellationToken = default);
 }
