@@ -19,9 +19,9 @@ using System;
 using System.Threading.Tasks;
 using Microcks.Aspire.Clients.Model;
 using Microcks.Aspire.Testing.Features.Mocking.Contract;
-using Microcks.Aspire.Testing.Fixtures.Contract;
 using Aspire.Hosting;
 using Xunit;
+using Microcks.Aspire.Tests.Fixtures.Contract;
 
 namespace Microcks.Aspire.Tests.Features.ContractTesting;
 
@@ -35,9 +35,9 @@ public sealed class PostmanContractTestingTests(MicrocksContractValidationFixtur
     private readonly MicrocksContractValidationFixture _fixture = fixture;
 
     /// <summary>
-    /// Verifies that calling the test endpoint with a bad implementation returns validation failures.
+    /// Tests calling the TestEndpoint API of Microcks with the bad implementation,
+    /// expecting validation failures.
     /// </summary>
-    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
     public async Task WhenCallingTestEndpoint_WithBadImplementation_ShouldReturnValidationFailures()
     {

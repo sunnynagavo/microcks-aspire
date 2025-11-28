@@ -20,10 +20,10 @@ using System.IO;
 using System.Threading.Tasks;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
-using Microcks.Aspire;
+using Microcks.Aspire.Testing;
 using Xunit;
 
-namespace Microcks.Aspire.Testing.Fixtures.Contract;
+namespace Microcks.Aspire.Tests.Fixtures.Contract;
 
 /// <summary>
 /// Fixture that adds two container resources (bad/good implementations)
@@ -31,14 +31,7 @@ namespace Microcks.Aspire.Testing.Fixtures.Contract;
 /// </summary>
 public sealed class MicrocksContractValidationFixture : IAsyncLifetime, IDisposable
 {
-    /// <summary>
-    /// Gets the test distributed application builder.
-    /// </summary>
-    public TestDistributedApplicationBuilder Builder { get; private set; } = default!;
-
-    /// <summary>
-    /// Gets the distributed application instance.
-    /// </summary>
+    public IDistributedApplicationBuilder Builder { get; private set; } = default!;
     public DistributedApplication App { get; private set; } = default!;
 
     /// <summary>
@@ -49,10 +42,7 @@ public sealed class MicrocksContractValidationFixture : IAsyncLifetime, IDisposa
     private const string BAD_PASTRY_IMAGE = "quay.io/microcks/contract-testing-demo:01";
     private const string GOOD_PASTRY_IMAGE = "quay.io/microcks/contract-testing-demo:02";
 
-    /// <summary>
-    /// Initializes the shared distributed application with Microcks and test implementation containers.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <inheritdoc />
     public async ValueTask InitializeAsync()
     {
         // Create builder without per-test ITestOutputHelper to avoid recreating logging per test
@@ -125,8 +115,6 @@ public sealed class MicrocksContractValidationFixture : IAsyncLifetime, IDisposa
         {
             // swallow, we're tearing down tests
         }
-
-        Builder?.Dispose();
     }
 
     /// <summary>

@@ -19,10 +19,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Aspire.Hosting;
-using Microcks.Aspire;
+using Microcks.Aspire.Testing;
 using Xunit;
 
-namespace Microcks.Aspire.Testing.Fixtures;
+namespace Microcks.Aspire.Tests.Fixtures.Mock;
 
 /// <summary>
 /// Shared fixture that starts a single Microcks instance for all tests in the collection.
@@ -33,14 +33,7 @@ namespace Microcks.Aspire.Testing.Fixtures;
 /// </summary>
 public sealed class MicrocksMockingFixture : IAsyncLifetime, IDisposable
 {
-    /// <summary>
-    /// Gets the test distributed application builder.
-    /// </summary>
-    public TestDistributedApplicationBuilder Builder { get; private set; } = default!;
-
-    /// <summary>
-    /// Gets the distributed application instance.
-    /// </summary>
+    public IDistributedApplicationBuilder Builder { get; private set; } = default!;
     public DistributedApplication App { get; private set; } = default!;
 
     /// <summary>
@@ -101,7 +94,6 @@ public sealed class MicrocksMockingFixture : IAsyncLifetime, IDisposable
             // swallow, we're tearing down tests
         }
 
-        Builder?.Dispose();
     }
 
     /// <summary>

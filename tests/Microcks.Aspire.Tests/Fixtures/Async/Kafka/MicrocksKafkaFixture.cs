@@ -19,13 +19,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Aspire.Hosting.ApplicationModel;
 using Microcks.Aspire.Async;
 using Microcks.Aspire.Testing;
-using Aspire.Confluent.Kafka;
 using Xunit;
-using Xunit.Internal;
 using Aspire.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microcks.Aspire.Tests.Fixtures.Async.Kafka;
 
@@ -35,14 +34,7 @@ namespace Microcks.Aspire.Tests.Fixtures.Async.Kafka;
 /// </summary>
 public sealed class MicrocksKafkaFixture : IAsyncLifetime
 {
-    /// <summary>
-    /// Gets the test distributed application builder.
-    /// </summary>
-    public TestDistributedApplicationBuilder Builder { get; private set; } = default!;
-
-    /// <summary>
-    /// Gets the distributed application instance.
-    /// </summary>
+    public IDistributedApplicationBuilder Builder { get; private set; } = default!;
     public DistributedApplication App { get; private set; } = default!;
 
     /// <summary>
@@ -55,18 +47,25 @@ public sealed class MicrocksKafkaFixture : IAsyncLifetime
     /// </summary>
     public KafkaServerResource KafkaResource { get; private set; } = default!;
 
-    /// <summary>
-    /// Initializes the shared distributed application with Microcks, Async Minion, and Kafka.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <inheritdoc />
     public async ValueTask InitializeAsync()
     {
-        // Create builder without per-test ITestOutputHelper to avoid recreating logging per test
-        Builder = TestDistributedApplicationBuilder.Create(o => { });
+        Builder = TestDistributedApplicationBuilder.Create(o =>
+        {
+            o.EnableResourceLogging = true;
+        });
+
+        Builder.Services.AddLogging(logging =>
+        {
+            //logging.ClearProviders();
+            logging.AddSimpleConsole(configure =>
+            {
+                configure.SingleLine = true;
+            });
+        });
 
         // Add Kafka server
-        var kafkaBuilder = Builder.AddKafka("kafka")
-            .WithKafkaUI();
+        var kafkaBuilder = Builder.AddKafka("kafka");
 
         // Microcks with AsyncMinion
         var microcksBuilder = Builder.AddMicrocks("microcks-pastry")
@@ -81,22 +80,21 @@ public sealed class MicrocksKafkaFixture : IAsyncLifetime
         App = Builder.Build();
 
         var asyncMinionResource = Builder.Resources.OfType<MicrocksAsyncMinionResource>().Single();
+        KafkaResource = kafkaBuilder.Resource;
+        MicrocksResource = microcksBuilder.Resource;
 
         await App.StartAsync(TestContext.Current.CancellationToken)
             .ConfigureAwait(false);
 
         // Wait for Kafka to be ready
         await App.ResourceNotifications.WaitForResourceHealthyAsync(
-            kafkaBuilder.Resource.Name, cancellationToken: TestContext.Current.CancellationToken)
+            KafkaResource.Name, cancellationToken: TestContext.Current.CancellationToken)
             .ConfigureAwait(false);
 
         // Wait for Async Minion to be ready before proceeding with tests
         await App.ResourceNotifications.WaitForResourceHealthyAsync(
             asyncMinionResource.Name, cancellationToken: TestContext.Current.CancellationToken)
             .ConfigureAwait(false);
-
-        KafkaResource = kafkaBuilder.Resource;
-        MicrocksResource = microcksBuilder.Resource;
     }
 
     /// <summary>

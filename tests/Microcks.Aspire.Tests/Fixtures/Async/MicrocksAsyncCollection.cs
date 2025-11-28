@@ -20,8 +20,7 @@ using Xunit;
 namespace Microcks.Aspire.Tests.Fixtures.Async;
 
 /// <summary>
-/// Collection definition used to share the <see cref="MicrocksAsyncFixture"/>
-/// between tests that require asynchronous messaging capabilities.
+/// Collection definition for tests using the <see cref="MicrocksAsyncFixture"/>.
 /// </summary>
 [CollectionDefinition(MicrocksAsyncCollection.CollectionName)]
 public sealed class MicrocksAsyncCollection : ICollectionFixture<MicrocksAsyncFixture>
