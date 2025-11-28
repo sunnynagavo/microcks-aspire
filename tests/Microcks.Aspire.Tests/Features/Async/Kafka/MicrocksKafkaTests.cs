@@ -202,7 +202,7 @@ public sealed class MicrocksKafkaTests(MicrocksKafkaFixture fixture)
             ServiceId = "Pastry orders API:0.1.0",
             RunnerType = TestRunnerType.ASYNC_API_SCHEMA,
             TestEndpoint = "kafka://kafka:9093/pastry-orders", // 9093 is the internal Docker network port
-            Timeout = TimeSpan.FromMilliseconds(40000)
+            Timeout = TimeSpan.FromMilliseconds(60000) // Increased timeout for async operations
         };
 
         var microcksClient = _fixture.App.CreateMicrocksClient(_fixture.MicrocksResource.Name);
@@ -214,8 +214,8 @@ public sealed class MicrocksKafkaTests(MicrocksKafkaFixture fixture)
         // but it validates that the test setup and endpoint format are correct
         var taskTestResult = microcksClient.TestEndpointAsync(testRequest, TestContext.Current.CancellationToken);
 
-        // Wait a bit to let the test initialize
-        await Task.Delay(750, TestContext.Current.CancellationToken);
+        // Wait a bit to let the test initialize and for Kafka to be ready
+        await Task.Delay(2000, TestContext.Current.CancellationToken);
 
         // Retry policy for producing messages
         var pipeline = new ResiliencePipelineBuilder()
