@@ -31,14 +31,7 @@ namespace Microcks.Aspire.Tests.Fixtures.Contract;
 /// </summary>
 public sealed class MicrocksContractValidationFixture : IAsyncLifetime, IDisposable
 {
-    /// <summary>
-    /// Gets the distributed application builder.
-    /// </summary>
     public IDistributedApplicationBuilder Builder { get; private set; } = default!;
-    
-    /// <summary>
-    /// Gets the distributed application instance.
-    /// </summary>
     public DistributedApplication App { get; private set; } = default!;
 
     /// <summary>
