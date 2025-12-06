@@ -31,8 +31,19 @@ namespace Microcks.Aspire.Tests.Fixtures.Contract;
 /// </summary>
 public sealed class MicrocksContractValidationFixture : IAsyncLifetime, IDisposable
 {
+    /// <summary>
+    /// Gets the test distributed application builder.
+    /// </summary>
     public IDistributedApplicationBuilder Builder { get; private set; } = default!;
+
+    /// <summary>
+    /// Gets the distributed application instance.
+    /// </summary>
     public DistributedApplication App { get; private set; } = default!;
+
+    /// <summary>
+    /// Gets the Microcks resource.
+    /// </summary>
     public MicrocksResource MicrocksResource { get; private set; } = default!;
 
     private const string BAD_PASTRY_IMAGE = "quay.io/microcks/contract-testing-demo:01";
@@ -113,6 +124,9 @@ public sealed class MicrocksContractValidationFixture : IAsyncLifetime, IDisposa
         }
     }
 
+    /// <summary>
+    /// Disposes of the fixture resources.
+    /// </summary>
     public void Dispose()
     {
         _ = DisposeAsync();

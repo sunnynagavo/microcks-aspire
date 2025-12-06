@@ -17,6 +17,9 @@
 
 namespace Microcks.Aspire;
 
+/// <summary>
+/// Provides default container image tags and configuration for the Microcks container.
+/// </summary>
 public static class MicrocksContainerImageTags
 {
     /// <summary>
