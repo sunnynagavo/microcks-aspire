@@ -12,6 +12,7 @@ files:
   active: ALWAYS
   artifacts:
     - path: './Microcks.Aspire-net9.0.spdx-sbom.json'
+    - path: './Microcks.Aspire-net10.0.spdx-sbom.json'
 
 release:
   github:
